@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5ce9c7a14c802cb3af4cbf8e66de5e6c1e5bf2484c77f61a63ebe2c8b2d81f29
+-- hash: 4eacb993812498fe1ce53862df235394fc885d0abd137b602fd012999a1d34d2
 
 name:           scheme
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Eval
+      Functions
       Parser
   other-modules:
       Paths_scheme

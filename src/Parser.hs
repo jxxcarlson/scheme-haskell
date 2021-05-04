@@ -13,14 +13,19 @@ data LispVal = Atom String
              | Number Integer
              | String String
              | Bool Bool
+        deriving Show
   
 
 
 readExpr input = case parse parseExpr "lisp" input of
     Left err -> "No match: " ++ show err
+    Right val -> "Found " ++ showVal val
+
+readExpr_ input = case parse parseExpr "lisp" input of
+    Left err -> "No match: " ++ show err
     Right val -> "Found " ++ show val
 
-instance Show LispVal where show = showVal
+-- instance Show LispVal where show = showVal
 
 run :: String -> Either ParseError LispVal
 run = parse parseExpr "lisp"
@@ -79,9 +84,11 @@ parseNumber2 = do
       digits <- many1 digit
       return (Number (read digits))
 
+validSymbols :: [Char]
+validSymbols = "!#$%&|*+-/:<=>?@^_~"
 
 symbol :: Parser Char
-symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
+symbol = oneOf validSymbols
 
 spaces :: Parser ()
 spaces = skipMany1 space

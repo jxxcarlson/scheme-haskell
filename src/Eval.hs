@@ -5,11 +5,19 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import Parser
     ( LispVal(Atom, String, Number, Bool, List), parseExpr, run )  
 
+import Functions
+
 
 {-| 
 
     > eval' "(+ 1 2)"
     3
+
+    > eval' "(symbol? '!)"
+    Atom "#t"
+
+    > eval' "(symbol? 3)"
+    Atom "#f"
     
 -}
 eval' :: String -> LispVal
@@ -30,7 +38,11 @@ primitives = [("+", numericBinop (+)),
               ("/", numericBinop div),
               ("mod", numericBinop mod),
               ("quotient", numericBinop quot),
-              ("remainder", numericBinop rem)]
+              ("remainder", numericBinop rem),
+              ("symbol?", Functions.isSymbol . head),
+              ("atom?", Functions.isAtom . head)
+
+              ]
 
 numericBinop :: (Integer -> Integer -> Integer) -> [LispVal] -> LispVal
 numericBinop op params = Number $ foldl1 op $ map unpackNum params
@@ -43,6 +55,7 @@ unpackNum (String n) = let parsed = reads n :: [(Integer, String)] in
                               else fst $ parsed !! 0
 unpackNum (List [n]) = unpackNum n
 unpackNum _ = 0
+
 
 -- BASICS: 
 eval :: LispVal -> LispVal
