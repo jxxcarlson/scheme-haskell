@@ -15,6 +15,24 @@ data LispVal = Atom String
              | Bool Bool
     deriving Show
 
+parseExpr :: Parser LispVal
+parseExpr = parseAtom
+         <|> parseString
+         <|> parseNumber
+         <|> parseQuoted
+         <|> do char '('
+                x <- try parseList <|> parseDottedList
+                char ')'
+                return x    
+
+parseList :: Parser LispVal
+parseList = liftM List $ sepBy parseExpr spaces
+
+parseDottedList :: Parser LispVal
+parseDottedList = do
+    head <- endBy parseExpr spaces
+    tail <- char '.' >> spaces >> parseExpr
+    return $ DottedList head tail
 
 parseString :: Parser LispVal
 parseString = do
@@ -22,6 +40,12 @@ parseString = do
                 x <- many (noneOf "\"")
                 char '"'
                 return $ String x
+
+parseQuoted :: Parser LispVal
+parseQuoted = do
+    char '\''
+    x <- parseExpr
+    return $ List [Atom "quote", x]               
 
 parseAtom :: Parser LispVal
 parseAtom = do 
@@ -42,11 +66,6 @@ parseNumber2 = do
       digits <- many1 digit
       return (Number (read digits))
 
-
-parseExpr :: Parser LispVal
-parseExpr = parseAtom
-         <|> parseString
-         <|> parseNumber
 
 symbol :: Parser Char
 symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
