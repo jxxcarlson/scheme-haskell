@@ -16,14 +16,17 @@ data LispVal = Atom String
     deriving Show
 
 parseExpr :: Parser LispVal
-parseExpr = parseAtom
+parseExpr = parseParenthesizedExpr
+         <|> parseAtom
          <|> parseString
          <|> parseNumber
          <|> parseQuoted
-         <|> do char '('
-                x <- try parseList <|> parseDottedList
-                char ')'
-                return x    
+
+parseParenthesizedExpr =   
+    do  char '('
+        x <- try parseList <|> parseDottedList
+        char ')'
+        return x                  
 
 parseList :: Parser LispVal
 parseList = liftM List $ sepBy parseExpr spaces
@@ -79,4 +82,9 @@ readExpr input = case parse parseExpr "lisp" input of
     Right val -> "Found value: "  ++ show val
 
 
+
+readExpr2 :: String -> String
+readExpr2 input = case parse parseParenthesizedExpr "lisp" input of
+    Left err -> "No match: " ++ show err
+    Right val -> "Found value: "  ++ show val
 
