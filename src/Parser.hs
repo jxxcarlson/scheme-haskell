@@ -15,6 +15,16 @@ data LispVal = Atom String
              | Bool Bool
     deriving Show
 
+
+readExpr :: String -> String
+readExpr input = case parse parseExpr "lisp" input of
+    Left err -> "No match: " ++ show err
+    Right val -> "Found value: "  ++ show val
+
+
+run :: String -> Either ParseError LispVal
+run = parse parseExpr "lisp"
+
 parseExpr :: Parser LispVal
 parseExpr = parseParenthesizedExpr
          <|> parseAtom
@@ -22,11 +32,11 @@ parseExpr = parseParenthesizedExpr
          <|> parseNumber
          <|> parseQuoted
 
-parseParenthesizedExpr =   
+parseParenthesizedExpr =
     do  char '('
         x <- try parseList <|> parseDottedList
         char ')'
-        return x                  
+        return x
 
 parseList :: Parser LispVal
 parseList = liftM List $ sepBy parseExpr spaces
@@ -48,14 +58,14 @@ parseQuoted :: Parser LispVal
 parseQuoted = do
     char '\''
     x <- parseExpr
-    return $ List [Atom "quote", x]               
+    return $ List [Atom "quote", x]
 
 parseAtom :: Parser LispVal
-parseAtom = do 
+parseAtom = do
               first <- letter <|> symbol
               rest <- many (letter <|> digit <|> symbol)
               let atom = first:rest
-              return $ case atom of 
+              return $ case atom of
                          "#t" -> Bool True
                          "#f" -> Bool False
                          _    -> Atom atom
@@ -65,7 +75,7 @@ parseNumber :: Parser LispVal
 parseNumber = liftM (Number . read) $ many1 digit
 
 parseNumber2 :: Parser LispVal
-parseNumber2 = do 
+parseNumber2 = do
       digits <- many1 digit
       return (Number (read digits))
 
@@ -75,16 +85,4 @@ symbol = oneOf "!#$%&|*+-/:<=>?@^_~"
 
 spaces :: Parser ()
 spaces = skipMany1 space
-
-readExpr :: String -> String
-readExpr input = case parse parseExpr "lisp" input of
-    Left err -> "No match: " ++ show err
-    Right val -> "Found value: "  ++ show val
-
-
-
-readExpr2 :: String -> String
-readExpr2 input = case parse parseParenthesizedExpr "lisp" input of
-    Left err -> "No match: " ++ show err
-    Right val -> "Found value: "  ++ show val
 
